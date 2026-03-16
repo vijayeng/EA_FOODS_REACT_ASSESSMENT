@@ -100,6 +100,11 @@
   color: #3730a3;
 }
 
+.secondary-link-btn {
+  background: #f1f5f9;
+  color: #334155;
+}
+
 .table-card {
   border: 1px solid #e5e7eb;
   border-radius: 12px;
@@ -173,4 +178,62 @@
   text-align: center !important;
   color: #64748b;
   padding: 1.25rem !important;
+}
+
+.table-link {
+  color: #1d4ed8;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.table-link:hover {
+  text-decoration: underline;
+}
+
+.action-cell {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.detail-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  padding: 1.2rem;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.detail-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.detail-grid h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.detail-grid p {
+  margin: 0.3rem 0 0;
+  font-size: 1rem;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 0.65rem;
 }

@@ -1,7 +1,8 @@
-import { ChangeEvent, FormEvent, useMemo, useState } from 'react'
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react'
+import { Link, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import './App.css'
 import { useAppDispatch, useAppSelector } from './app/hooks'
-import { selectVehicleStats, selectVehicles } from './features/vehicles/selectors'
+import { selectVehicleById, selectVehicleStats, selectVehicles } from './features/vehicles/selectors'
 import { Vehicle, VehicleStatus } from './features/vehicles/types'
 import { addVehicle, updateVehicle } from './features/vehicles/vehiclesSlice'
 import { useDebounce } from './hooks/useDebounce'
@@ -71,7 +72,9 @@ const validateForm = (values: VehicleFormValues): VehicleFormErrors => {
   return errors
 }
 
-function App() {
+function DashboardPage() {
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const dispatch = useAppDispatch()
   const vehicles = useAppSelector(selectVehicles)
   const stats = useAppSelector(selectVehicleStats)
@@ -164,6 +167,22 @@ function App() {
 
     resetForm()
   }
+
+  useEffect(() => {
+    const editVehicleId = searchParams.get('edit')
+    if (!editVehicleId) {
+      return
+    }
+
+    const targetVehicle = vehicles.find((vehicle) => vehicle.id === editVehicleId)
+    if (targetVehicle) {
+      startEdit(targetVehicle)
+    }
+
+    const updatedParams = new URLSearchParams(searchParams)
+    updatedParams.delete('edit')
+    setSearchParams(updatedParams, { replace: true })
+  }, [searchParams, setSearchParams, vehicles])
 
   return (
     <main className="app-shell">
@@ -294,7 +313,11 @@ function App() {
               filteredVehicles.map((vehicle) => (
                 <tr key={vehicle.id}>
                   <td>{vehicle.id}</td>
-                  <td>{vehicle.name}</td>
+                  <td>
+                    <Link className="table-link" to={`/vehicles/${vehicle.id}`}>
+                      {vehicle.name}
+                    </Link>
+                  </td>
                   <td>{vehicle.type}</td>
                   <td>
                     <span className={`status-badge status-${vehicle.status.toLowerCase().replace(/ /g, '-')}`}>
@@ -303,7 +326,14 @@ function App() {
                   </td>
                   <td>{vehicle.mileage.toLocaleString()}</td>
                   <td>{vehicle.lastServiceDate}</td>
-                  <td>
+                  <td className="action-cell">
+                    <button
+                      type="button"
+                      className="link-btn secondary-link-btn"
+                      onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                    >
+                      View
+                    </button>
                     <button type="button" className="link-btn" onClick={() => startEdit(vehicle)}>
                       Edit
                     </button>
@@ -315,6 +345,87 @@ function App() {
         </table>
       </section>
     </main>
+  )
+}
+
+function VehicleDetailPage() {
+  const navigate = useNavigate()
+  const { vehicleId } = useParams<{ vehicleId: string }>()
+  const selector = useMemo(() => {
+    if (!vehicleId) {
+      return null
+    }
+
+    return selectVehicleById(vehicleId)
+  }, [vehicleId])
+  const vehicle = useAppSelector((state) => (selector ? selector(state) : undefined))
+
+  if (!vehicle) {
+    return (
+      <main className="app-shell">
+        <section className="detail-card">
+          <h1>Vehicle not found</h1>
+          <p>The requested vehicle does not exist.</p>
+          <button type="button" className="primary-btn" onClick={() => navigate('/')}>
+            Back to dashboard
+          </button>
+        </section>
+      </main>
+    )
+  }
+
+  return (
+    <main className="app-shell">
+      <section className="detail-card">
+        <div className="detail-header">
+          <h1>{vehicle.name}</h1>
+          <span className={`status-badge status-${vehicle.status.toLowerCase().replace(/ /g, '-')}`}>
+            {vehicle.status}
+          </span>
+        </div>
+
+        <div className="detail-grid">
+          <div>
+            <h3>ID</h3>
+            <p>{vehicle.id}</p>
+          </div>
+          <div>
+            <h3>Type</h3>
+            <p>{vehicle.type}</p>
+          </div>
+          <div>
+            <h3>Mileage</h3>
+            <p>{vehicle.mileage.toLocaleString()}</p>
+          </div>
+          <div>
+            <h3>Last Service Date</h3>
+            <p>{vehicle.lastServiceDate}</p>
+          </div>
+        </div>
+
+        <div className="detail-actions">
+          <button type="button" className="secondary-btn" onClick={() => navigate('/')}>
+            Back
+          </button>
+          <button
+            type="button"
+            className="primary-btn"
+            onClick={() => navigate(`/?edit=${vehicle.id}`)}
+          >
+            Edit Vehicle
+          </button>
+        </div>
+      </section>
+    </main>
+  )
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<DashboardPage />} />
+      <Route path="/vehicles/:vehicleId" element={<VehicleDetailPage />} />
+    </Routes>
   )
 }
 
