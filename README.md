@@ -57,6 +57,12 @@ An `.env.example` file is included for future extension.
 - Search only updates after debounce delay
 - No-results search shows explicit empty state
 
+### Bonus Features Implemented
+
+- **Summary stats bar (reactive):** shows Total, Active, In Maintenance, and Inactive counts from memoized Redux selectors.
+- **Feature-based structure:** organized under `src/features/vehicles` with shared typed models/selectors for scalable maintenance.
+- **Multi-sort on vehicle list:** supports sorting by mileage, status, and last service date.
+
 ## Project Structure
 
 ```text

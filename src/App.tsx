@@ -8,6 +8,7 @@ import { addVehicle, updateVehicle } from './features/vehicles/vehiclesSlice'
 import { useDebounce } from './hooks/useDebounce'
 
 type FormMode = 'add' | 'edit'
+type SortOption = 'mileage-desc' | 'status-asc' | 'service-date-desc'
 
 interface VehicleFormValues {
   name: string
@@ -79,6 +80,7 @@ function DashboardPage() {
   const vehicles = useAppSelector(selectVehicles)
   const stats = useAppSelector(selectVehicleStats)
   const [searchTerm, setSearchTerm] = useState('')
+  const [sortBy, setSortBy] = useState<SortOption>('mileage-desc')
   const [formMode, setFormMode] = useState<FormMode>('add')
   const [editingVehicleId, setEditingVehicleId] = useState<string | null>(null)
   const [formValues, setFormValues] = useState<VehicleFormValues>(emptyFormValues)
@@ -97,6 +99,26 @@ function DashboardPage() {
       return name.includes(normalizedTerm) || status.includes(normalizedTerm)
     })
   }, [vehicles, debouncedSearchTerm])
+
+  const displayedVehicles = useMemo(() => {
+    const sortedVehicles = [...filteredVehicles]
+
+    sortedVehicles.sort((leftVehicle, rightVehicle) => {
+      if (sortBy === 'mileage-desc') {
+        return rightVehicle.mileage - leftVehicle.mileage
+      }
+
+      if (sortBy === 'status-asc') {
+        return leftVehicle.status.localeCompare(rightVehicle.status)
+      }
+
+      const leftTimestamp = Date.parse(leftVehicle.lastServiceDate)
+      const rightTimestamp = Date.parse(rightVehicle.lastServiceDate)
+      return rightTimestamp - leftTimestamp
+    })
+
+    return sortedVehicles
+  }, [filteredVehicles, sortBy])
 
   const resetForm = () => {
     setFormMode('add')
@@ -197,17 +219,34 @@ function DashboardPage() {
       </header>
 
       <section className="filters-row">
-        <label htmlFor="vehicle-search" className="search-label">
-          Search by name or status
-        </label>
-        <input
-          id="vehicle-search"
-          type="search"
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-          placeholder="Try: active, maintenance, city..."
-          className="search-input"
-        />
+        <div>
+          <label htmlFor="vehicle-search" className="search-label">
+            Search by name or status
+          </label>
+          <input
+            id="vehicle-search"
+            type="search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Try: active, maintenance, city..."
+            className="search-input"
+          />
+        </div>
+        <div>
+          <label htmlFor="vehicle-sort" className="search-label">
+            Sort by
+          </label>
+          <select
+            id="vehicle-sort"
+            value={sortBy}
+            onChange={(event) => setSortBy(event.target.value as SortOption)}
+            className="sort-select"
+          >
+            <option value="mileage-desc">Mileage (high to low)</option>
+            <option value="status-asc">Status (A to Z)</option>
+            <option value="service-date-desc">Last service date (recent first)</option>
+          </select>
+        </div>
       </section>
 
       <section className="form-card">
@@ -303,14 +342,14 @@ function DashboardPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredVehicles.length === 0 ? (
+            {displayedVehicles.length === 0 ? (
               <tr>
                 <td colSpan={7} className="empty-state">
                   No vehicles found for "{debouncedSearchTerm}".
                 </td>
               </tr>
             ) : (
-              filteredVehicles.map((vehicle) => (
+              displayedVehicles.map((vehicle) => (
                 <tr key={vehicle.id}>
                   <td>{vehicle.id}</td>
                   <td>
