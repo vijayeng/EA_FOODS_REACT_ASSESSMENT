@@ -28,6 +28,26 @@
   background: #fff;
 }
 
+.filters-row {
+  margin-bottom: 1rem;
+}
+
+.search-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.95rem;
+}
+
 .vehicle-table {
   width: 100%;
   border-collapse: collapse;
@@ -68,4 +88,10 @@
 .status-in-maintenance {
   background: #fef3c7;
   color: #92400e;
+}
+
+.empty-state {
+  text-align: center !important;
+  color: #64748b;
+  padding: 1.25rem !important;
 }
