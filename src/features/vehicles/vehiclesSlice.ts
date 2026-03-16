@@ -99,9 +99,15 @@ const vehiclesSlice = createSlice({
   reducers: {
     addVehicle: (state, action: PayloadAction<Vehicle>) => {
       const existing = state.items.find((vehicle) => vehicle.id === action.payload.id)
+      const duplicateByData = state.items.find((vehicle) => isSameVehicleData(vehicle, action.payload))
 
       // Idempotent add: same payload for same ID is ignored.
       if (existing && isSameVehicleData(existing, action.payload)) {
+        return
+      }
+
+      // Idempotent add: same form submission should not create a duplicate vehicle.
+      if (duplicateByData) {
         return
       }
 
